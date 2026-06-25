@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Validador de Links</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<h1>Validador de Links</h1>
+<p class="subtitle">Verificacao HTTP com metodo HEAD</p>
+
+<div class="actions">
+  <!-- Botao principal: dispara POST /verificar no servidor,
+       que por sua vez executa checker.js como processo filho -->
+  <button id="btnVerificar" onclick="verificar()">Verificar Agora</button>
+
+  <!-- Botao secundario: apenas recarrega os dados do ultimo resultado salvo -->
+  <button id="btnAtualizar" onclick="carregar()" class="btn-secondary">Ver Ultimo Resultado</button>
+</div>
+
+<div id="app"><div class="msg"><span class="big">&#9200;</span>Clique em "Verificar Agora" para comecar.</div></div>
+
+<script>
+// -------------------------------------------------------
+// verificar(): chama POST /verificar no servidor.
+// O servidor executa checker.js e retorna quando terminar.
+// Depois chama carregar() para exibir os resultados.
+// -------------------------------------------------------
+async function verificar() {
+  const app = document.getElementById('app')
+  const btn = document.getElementById('btnVerificar')
+
+  // Desabilita o botao enquanto a verificacao esta em andamento
+  btn.disabled = true
+  btn.textContent = 'Verificando...'
+  app.innerHTML = '<div class="msg"><span class="big">&#128269;</span>Verificando links... aguarde.</div>'
+
+  try {
+    // fetch com method: 'POST' envia uma requisicao POST para /verificar
+    // O servidor so responde quando checker.js terminar de executar
+    const res = await fetch('/verificar', { method: 'POST' })
+    const dados = await res.json()
+
+    if (!dados.ok) {
+      // Se o checker retornou erro, exibe o log do terminal
+      app.innerHTML = '<div class="msg"><span class="big">&#10060;</span>Erro ao verificar.<br><pre>' + dados.log + '</pre></div>'
+      return
+    }
+
+    // Sucesso: agora carrega e exibe os resultados
+    await carregar()
+
+  } catch (e) {
+    app.innerHTML = '<div class="msg"><span class="big">&#10060;</span>Nao foi possivel conectar ao servidor.<br>Execute: node server.js</div>'
+  } finally {
+    // Sempre reabilita o botao ao terminar (sucesso ou erro)
+    btn.disabled = false
+    btn.textContent = 'Verificar Agora'
+  }
+}
+
+// -------------------------------------------------------
+// carregar(): busca GET /resultados e renderiza a interface
+// -------------------------------------------------------
+async function carregar() {
+  const app = document.getElementById('app')
+  app.innerHTML = '<div class="msg"><span class="big">&#9203;</span>Carregando resultados...</div>'
+
+  try {
+    const res  = await fetch('/resultados')
+    const dados = await res.json()
+
+    if (dados.erro) {
+      app.innerHTML = '<div class="msg"><span class="big">&#9888;&#65039;</span>' + dados.erro + '</div>'
+      return
+    }
+
+    const falhas = dados.total - dados.ok
+    const pct    = Math.round((dados.ok / dados.total) * 100)
+    const data   = new Date(dados.data).toLocaleString('pt-BR')
+
+    let html = '<div class="stats">'
+    html += '<div class="stat total"><div class="val">' + dados.total + '</div><div class="lbl">Total</div></div>'
+    html += '<div class="stat ok"><div class="val">'    + dados.ok    + '</div><div class="lbl">Validos</div></div>'
+    html += '<div class="stat fail"><div class="val">'  + falhas      + '</div><div class="lbl">Invalidos</div></div>'
+    html += '</div>'
+    html += '<div class="progress-wrap"><div class="progress-bar" id="bar" style="width:0%"></div></div>'
+    html += '<p class="data-info">Verificado em ' + data + ' - ' + pct + '% de sucesso</p>'
+    html += '<div class="links">'
+
+    dados.links.forEach(function(link) {
+      var cls    = link.ok ? 'ok' : 'fail'
+      var icone  = link.ok ? '&#9989;' : '&#10060;'
+      var status = link.status || 'erro'
+      html += '<div class="link-card ' + cls + '">'
+      html += '<span class="icon">' + icone + '</span>'
+      html += '<span class="url">'  + link.url + '</span>'
+      html += '<span class="badge">HTTP ' + status + '</span>'
+      html += '</div>'
+    })
+
+    html += '</div>'
+    app.innerHTML = html
+
+    // Anima a barra de progresso apos renderizar o DOM
+    setTimeout(function() {
+      document.getElementById('bar').style.width = pct + '%'
+    }, 100)
+
+  } catch (e) {
+    app.innerHTML = '<div class="msg"><span class="big">&#10060;</span>Erro ao carregar resultados.</div>'
+  }
+}
+</script>
+</body>
+</html>

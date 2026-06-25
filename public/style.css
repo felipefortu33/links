@@ -1,0 +1,206 @@
+/* ============================================================
+   style.css — Estilos do Validador de Links
+   Separado do HTML para melhor organização do projeto
+   ============================================================ */
+
+/* Variáveis CSS globais — definem a paleta de cores do tema escuro.
+   Qualquer elemento pode usar: color: var(--accent) */
+:root {
+  --bg:      #0f1117;   /* fundo da página */
+  --surface: #1a1d27;   /* fundo dos cards */
+  --border:  #2e3350;   /* cor das bordas */
+  --accent:  #7c6af7;   /* roxo principal */
+  --green:   #3ecf8e;   /* links válidos */
+  --red:     #e05c5c;   /* links inválidos */
+  --warn:    #f5a623;   /* avisos */
+  --text:    #e4e6f0;   /* texto principal */
+  --muted:   #7b82a0;   /* texto secundário */
+}
+
+/* Reset básico: remove margens e paddings padrão do navegador */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+/* Estilo base da página */
+body {
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding: 40px 20px;
+}
+
+/* Título principal com gradiente aplicado só no texto */
+h1 {
+  text-align: center;
+  font-size: 1.9rem;
+  margin-bottom: 6px;
+  background: linear-gradient(120deg, #7c6af7, #56cfba);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Subtítulo discreto abaixo do título */
+.subtitle {
+  text-align: center;
+  color: var(--muted);
+  margin-bottom: 36px;
+  font-size: 14px;
+}
+
+/* --- CARDS DE ESTATÍSTICAS --- */
+
+/* Container dos 3 cards (Total / Válidos / Inválidos) */
+.stats {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+/* Card individual de estatística */
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 28px;
+  text-align: center;
+  min-width: 120px;
+}
+
+/* Número grande dentro do card */
+.stat .val {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+/* Rótulo pequeno abaixo do número */
+.stat .lbl { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+
+/* Cores diferentes para cada tipo de stat */
+.stat.total .val { color: var(--accent); }
+.stat.ok    .val { color: var(--green); }
+.stat.fail  .val { color: var(--red); }
+
+/* --- BARRA DE PROGRESSO --- */
+
+.progress-wrap {
+  max-width: 640px;
+  margin: 0 auto 36px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  height: 10px;
+  overflow: hidden;
+}
+
+/* A largura é animada via JS de 0% até o percentual real */
+.progress-bar {
+  height: 100%;
+  background: linear-gradient(90deg, var(--green), #56cfba);
+  border-radius: 99px;
+  transition: width .8s ease; /* animação suave de 0.8s */
+  width: 0%;
+}
+
+/* --- LISTA DE LINKS --- */
+
+.links {
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Card de cada link individual */
+.link-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: border-color .2s;
+}
+
+/* Borda lateral colorida indica status do link */
+.link-card.ok   { border-left: 3px solid var(--green); }
+.link-card.fail { border-left: 3px solid var(--red); }
+
+.link-card .icon { font-size: 1.3rem; flex-shrink: 0; }
+
+/* URL ocupa todo o espaço disponível; word-break evita overflow */
+.link-card .url  { flex: 1; font-size: 14px; word-break: break-all; }
+
+/* Badge com o código HTTP (ex: HTTP 200, HTTP 404) */
+.link-card .badge {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.link-card.ok   .badge { background: rgba(62,207,142,.15); color: var(--green); border: 1px solid var(--green); }
+.link-card.fail .badge { background: rgba(224,92,92,.15);  color: var(--red);   border: 1px solid var(--red); }
+
+/* --- BOTOES --- */
+
+.actions {
+  text-align: center;
+  margin-bottom: 32px;
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Botao primario: "Verificar Agora" */
+button {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 28px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .2s;
+}
+
+button:hover  { opacity: .85; }
+
+/* Botao desabilitado enquanto o checker esta rodando */
+button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Botao secundario: "Ver Ultimo Resultado" — contorno sem preenchimento */
+button.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+button.btn-secondary:hover { border-color: var(--accent); color: var(--accent); opacity: 1; }
+
+/* Texto de data/hora da última verificação */
+.data-info {
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  margin-bottom: 28px;
+}
+
+/* --- ESTADOS DE CARREGAMENTO / ERRO --- */
+
+.msg {
+  text-align: center;
+  padding: 60px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+/* Ícone grande exibido nos estados de loading/erro */
+.msg .big { font-size: 2.5rem; display: block; margin-bottom: 12px; }
