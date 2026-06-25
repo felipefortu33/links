@@ -1,0 +1,12 @@
+{
+  "name": "validador-links",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "check": "node checker.js",
+    "server": "node server.js"
+  },
+  "dependencies": {
+    "yargs": "^17.7.2"
+  }
+}
